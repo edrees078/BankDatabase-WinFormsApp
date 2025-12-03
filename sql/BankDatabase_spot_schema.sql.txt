@@ -1,0 +1,418 @@
+SHOW VARIABLES LIKE 'datadir';
+
+CREATE DATABASE BankDatabase_spot;
+USE BankDatabase_spot;
+
+SHOW PROCEDURE STATUS
+  WHERE Db = 'BankDatabase_spot'
+    AND Name = 'HesapEkle';
+    
+    GRANT ALL PRIVILEGES ON BankDatabase_spot.* TO 'root'@'127.0.0.1';
+FLUSH PRIVILEGES;
+
+
+CREATE TABLE BankDatabase_Şube (
+    Şube_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Şube_Adı VARCHAR(100) NOT NULL,
+    Şube_Adresi VARCHAR(255) NOT NULL,
+    Şube_Telefonu VARCHAR(15) NOT NULL UNIQUE
+);
+
+
+
+
+
+
+CREATE TABLE BankDatabase_Personel (
+    Personel_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Personel_İsim VARCHAR(100) NOT NULL,
+    Personel_Soyisim VARCHAR(100) NOT NULL,
+    Personel_Görev VARCHAR(50) NOT NULL,
+    Şube_ID INT NOT NULL,
+    Personel_ÇalışmaTarihi DATE NOT NULL,
+    FOREIGN KEY (Şube_ID) REFERENCES BankDatabase_Şube(Şube_ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE BankDatabase_Müşteri (
+    Müşteri_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Müşteri_isim VARCHAR(100) NOT NULL, 
+    Müşteri_Soyisim VARCHAR(100) NOT NULL, 
+    Müşteri_Telefon VARCHAR(15) NOT NULL UNIQUE, 
+    Müşteri_Eposta VARCHAR(100) NOT NULL UNIQUE, 
+    Müşteri_TCKNŞirketVergiNo VARCHAR(20) NOT NULL UNIQUE, 
+    Müşteri_Türü ENUM('Bireysel', 'Kurumsal') NOT NULL, 
+    Müşteri_KayıtTarihi DATE NOT NULL CHECK (Müşteri_KayıtTarihi >= '2015-01-01'),
+    Şube_ID INT NOT NULL,
+    Personel_ID INT DEFAULT NULL, -- Optional relationship to Personel
+    FOREIGN KEY (Şube_ID) REFERENCES BankDatabase_Şube(Şube_ID)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (Personel_ID) REFERENCES BankDatabase_Personel(Personel_ID)
+    ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE TABLE BankDatabase_Hesap (
+    Hesap_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Müşteri_ID INT NOT NULL,
+    Hesap_Türü ENUM('Vadesiz', 'Vadeli') NOT NULL,
+    Hesap_Bakiye DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    Hesap_AçılışTarihi DATE NOT NULL CHECK (Hesap_AçılışTarihi >= '2015-01-01'),
+    Hesap_Durumu ENUM('Aktif', 'Pasif') NOT NULL,
+    FOREIGN KEY (Müşteri_ID) REFERENCES BankDatabase_Müşteri(Müşteri_ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE BankDatabase_İşlem (
+    İşlem_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Hesap_ID INT NOT NULL,
+    İşlem_Türü ENUM('Havale', 'EFT', 'Yatırım', 'Ödeme') NOT NULL,
+    Açılış_İşlem_Tarihi DATE NOT NULL,
+    İşlem_Tutarı DECIMAL(10, 2) NOT NULL CHECK (İşlem_Tutarı > 0),
+    İşlem_Açıklaması VARCHAR(255) NULL,
+    FOREIGN KEY (Hesap_ID) REFERENCES BankDatabase_Hesap(Hesap_ID)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+DELIMITER //
+CREATE PROCEDURE InsertŞube(
+    IN şubeAdı VARCHAR(100),
+    IN şubeAdresi VARCHAR(255),
+    IN şubeTelefonu VARCHAR(15)
+)
+BEGIN
+    INSERT INTO BankDatabase_Şube (Şube_Adı, Şube_Adresi, Şube_Telefonu)
+    VALUES (şubeAdı, şubeAdresi, şubeTelefonu);
+END //
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE InsertŞube(
+    IN şubeAdı VARCHAR(100),
+    IN şubeAdresi VARCHAR(255),
+    IN şubeTelefonu VARCHAR(15)
+)
+BEGIN
+    INSERT INTO BankDatabase_Şube (Şube_Adı, Şube_Adresi, Şube_Telefonu)
+    VALUES (şubeAdı, şubeAdresi, şubeTelefonu);
+END $$
+DELIMITER ;
+
+CALL InsertŞube('Merkez Şube', 'İstanbul', '0212-123-4567');
+CALL InsertŞube('Merkez Şube', 'Bartin', '0378-123-4567');
+
+SELECT * FROM BankDatabase_Şube;
+
+
+
+
+DELIMITER $$
+CREATE PROCEDURE InsertMüşteri(
+    IN isim VARCHAR(100),
+    IN soyisim VARCHAR(100),
+    IN telefon VARCHAR(15),
+    IN eposta VARCHAR(100),
+    IN tckn VARCHAR(20),
+    IN tür ENUM('Bireysel', 'Kurumsal'),
+    IN kayıtTarihi DATE,
+    IN şubeID INT,
+    IN personelID INT
+)
+BEGIN
+    INSERT INTO BankDatabase_Müşteri (Müşteri_isim, Müşteri_Soyisim, Müşteri_Telefon, Müşteri_Eposta, Müşteri_TCKNŞirketVergiNo, 
+    Müşteri_Türü, Müşteri_KayıtTarihi, Şube_ID, Personel_ID)
+    VALUES (isim, soyisim, telefon, eposta, tckn, tür, kayıtTarihi, şubeID, personelID);
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE UpdateMüşteri(
+    IN müşteriID INT,
+    IN yeniTelefon VARCHAR(15),
+    IN yeniEposta VARCHAR(100)
+)
+BEGIN
+    UPDATE BankDatabase_Müşteri
+    SET Müşteri_Telefon = yeniTelefon, Müşteri_Eposta = yeniEposta
+    WHERE Müşteri_ID = müşteriID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE DeleteMüşteri(
+    IN müşteriID INT
+)
+BEGIN
+    DELETE FROM BankDatabase_Müşteri WHERE Müşteri_ID = müşteriID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE GetMüşteriDetails(
+    IN müşteriID INT
+)
+BEGIN
+    SELECT * FROM BankDatabase_Müşteri WHERE Müşteri_ID = müşteriID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE HesapEkle(
+    IN müşteriID INT,
+    IN tür ENUM('Vadesiz', 'Vadeli'),
+    IN bakiye DECIMAL(10, 2),
+    IN açılışTarihi DATE,
+    IN durum ENUM('Aktif', 'Pasif')
+)
+BEGIN
+    INSERT INTO BankDatabase_Hesap (Müşteri_ID, Hesap_Türü, Hesap_Bakiye, Hesap_AçılışTarihi, Hesap_Durumu)
+    VALUES (müşteriID, tür, bakiye, açılışTarihi, durum);
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE HesapGuncelle(
+    IN pHesapID INT,
+    IN pMusteriID INT,
+    IN pTur ENUM('Vadesiz','Vadeli'),
+    IN pBakiye DECIMAL(10,2),
+    IN pAcilisTarihi DATE,
+    IN pDurum ENUM('Aktif','Pasif')
+)
+BEGIN
+    UPDATE BankDatabase_Hesap
+    SET 
+        Müşteri_ID = pMusteriID,
+        Hesap_Türü = pTur,
+        Hesap_Bakiye = pBakiye,
+        Hesap_AçılışTarihi = pAcilisTarihi,
+        Hesap_Durumu = pDurum
+    WHERE Hesap_ID = pHesapID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE HesapSil(
+    IN pHesapID INT
+)
+BEGIN
+    DELETE FROM BankDatabase_Hesap
+    WHERE Hesap_ID = pHesapID;
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE HesapDetay(
+    IN hesapID INT
+)
+BEGIN
+    SELECT * FROM BankDatabase_Hesap WHERE Hesap_ID = hesapID;
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE İşlemEkle(
+    IN hesapID INT,
+    IN tür ENUM('Havale', 'EFT', 'Yatırım', 'Ödeme'),
+    IN işlemTutarı DECIMAL(10, 2),
+    IN açıklama VARCHAR(255),
+    IN işlemTarihi DATE
+)
+BEGIN
+    INSERT INTO BankDatabase_İşlem (Hesap_ID, İşlem_Türü, İşlem_Tutarı, İşlem_Açıklaması, Açılış_İşlem_Tarihi)
+    VALUES (hesapID, tür, işlemTutarı, açıklama, işlemTarihi);
+END $$
+DELIMITER ;
+
+SELECT * FROM BankDatabase_İşlem;
+
+DELIMITER $$
+
+-- Edit procedure
+CREATE PROCEDURE IslemGuncelle(
+    IN pIslemID INT,
+    IN pHesapID INT,
+    IN pTur ENUM('Havale','EFT','Yatırım','Ödeme'),
+    IN pTarih DATE,
+    IN pTutar DECIMAL(10,2),
+    IN pAciklama VARCHAR(255)
+)
+BEGIN
+    UPDATE BankDatabase_İşlem
+    SET 
+        Hesap_ID = pHesapID,
+        İşlem_Türü = pTur,
+        Açılış_İşlem_Tarihi = pTarih,
+        İşlem_Tutarı = pTutar,
+        İşlem_Açıklaması = pAciklama
+    WHERE İşlem_ID = pIslemID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+-- Delete procedure
+CREATE PROCEDURE IslemSil(
+    IN pIslemID INT
+)
+BEGIN
+    DELETE FROM BankDatabase_İşlem
+    WHERE İşlem_ID = pIslemID;
+END $$
+DELIMITER ;
+
+
+
+DELIMITER $$
+CREATE PROCEDURE İşlemDetay(
+    IN işlemID INT
+)
+BEGIN
+    SELECT * FROM BankDatabase_İşlem WHERE İşlem_ID = işlemID;
+END $$
+DELIMITER ;
+
+
+CALL İşlemDetay(2);
+CALL İşlemDetay(3);
+
+
+
+DELIMITER $$
+CREATE PROCEDURE ŞubeGuncelle (
+    IN şubeID INT,
+    IN yeniAdı VARCHAR(100),
+    IN yeniAdresi VARCHAR(255),
+    IN yeniTelefonu VARCHAR(15)
+)
+BEGIN
+    UPDATE BankDatabase_Şube
+    SET Şube_Adı = yeniAdı, Şube_Adresi = yeniAdresi, Şube_Telefonu = yeniTelefonu
+    WHERE Şube_ID = şubeID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE ŞubeSilme(
+    IN şubeID INT
+)
+BEGIN
+    DELETE FROM BankDatabase_Şube WHERE Şube_ID = şubeID;
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE ŞubeDetay(
+    IN şubeID INT
+)
+BEGIN
+    SELECT * FROM BankDatabase_Şube WHERE Şube_ID = şubeID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE PersonelEkleme(
+    IN isim VARCHAR(100),
+    IN soyisim VARCHAR(100),
+    IN görev VARCHAR(50),
+    IN şubeID INT,
+    IN çalışmaTarihi DATE
+)
+BEGIN
+    INSERT INTO BankDatabase_Personel (Personel_İsim, Personel_Soyisim, Personel_Görev, Şube_ID, Personel_ÇalışmaTarihi)
+    VALUES (isim, soyisim, görev, şubeID, çalışmaTarihi);
+END $$
+DELIMITER ;
+
+CALL PersonelEkleme('Ali', 'Yilmaz', 'Müdür', 1, '2023-01-01');
+CALL PersonelEkleme('idris', 'kara', 'asistant', 1, '2025-01-02');
+
+SELECT * FROM BankDatabase_Personel;
+
+
+DELIMITER $$
+CREATE PROCEDURE PersonelGuncelle (
+    IN personelID INT,
+    IN yeniGörev VARCHAR(50),
+    IN yeniŞubeID INT
+)
+BEGIN
+    UPDATE BankDatabase_Personel
+    SET Personel_Görev = yeniGörev, Şube_ID = yeniŞubeID
+    WHERE Personel_ID = personelID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE PersonelSilme(
+    IN personelID INT
+)
+BEGIN
+    DELETE FROM BankDatabase_Personel WHERE Personel_ID = personelID;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE PersonelDetay(
+    IN personelID INT
+)
+BEGIN
+    SELECT * FROM BankDatabase_Personel WHERE Personel_ID = personelID;
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE FUNCTION GetTotalBalance(müşteriID INT)
+RETURNS DECIMAL(10, 2)
+DETERMINISTIC
+BEGIN
+    DECLARE totalBalance DECIMAL(10, 2);
+    
+    
+    SELECT SUM(Hesap_Bakiye) INTO totalBalance
+    FROM BankDatabase_Hesap
+    WHERE Müşteri_ID = müşteriID;
+
+    
+    RETURN IFNULL(totalBalance, 0.00); 
+END $$
+DELIMITER ;
+
+SELECT GetTotalBalance(14) AS TotalBalance;
+
+-- "Bu tetikleyici, bir işlem gerçekleştirildiğinde hiçbir hesabın bakiyesinin sıfırın altına düşmemesini sağlar."
+
+DELIMITER $$
+CREATE TRIGGER PreventNegativeBalance
+BEFORE UPDATE ON BankDatabase_Hesap
+FOR EACH ROW
+BEGIN
+    IF NEW.Hesap_Bakiye < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Hesap bakiyesi negatif olamaz!';
+    END IF;
+END $$
+DELIMITER ;
+
+
+
+DELIMITER $$
+CREATE TRIGGER UpdateAccountStatus
+AFTER UPDATE ON BankDatabase_Hesap
+FOR EACH ROW
+BEGIN
+    IF NEW.Hesap_Bakiye = 0 THEN
+        UPDATE BankDatabase_Hesap
+        SET Hesap_Durumu = 'Pasif'
+        WHERE Hesap_ID = NEW.Hesap_ID;
+    END IF;
+END $$
+DELIMITER ;
+
+SHOW TRIGGERS WHERE `Trigger` = 'UpdateAccountStatus';
+SELECT * FROM BankDatabase_Hesap WHERE Hesap_ID = 8
+
+
