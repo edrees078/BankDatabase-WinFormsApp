@@ -69,9 +69,11 @@ BankDatabase-WinFormsApp/
 │   └─ ... other WinForms files
 │
 └─ sql/                          # Database scripts
-    └─ BankDatabase_spot_schema.sql
+    └─ BankDatabase_spot_schema.sql 
+```
 
 ---
+
 ## Database Setup
 
 1. **Install MySQL**
