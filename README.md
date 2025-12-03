@@ -1,4 +1,4 @@
-# WindowsFormsApp2
+# WindowsFormsApp
 
 # BankDatabase WinForms App
 
@@ -71,3 +71,7 @@ BankDatabase-WinFormsApp/
 └─ sql/                          # Database scripts
     └─ BankDatabase_spot_schema.sql
 
+
+--
+
+## Database Setup
