@@ -71,7 +71,25 @@ BankDatabase-WinFormsApp/
 └─ sql/                          # Database scripts
     └─ BankDatabase_spot_schema.sql
 
-
---
-
+---
 ## Database Setup
+
+1. **Install MySQL**
+   - Install MySQL Server and MySQL Workbench (or any MySQL client).
+   - Make sure you know your MySQL username and password (e.g. `root`).
+
+2. **Create the database and objects**
+   - Open `sql/BankDatabase_spot_schema.sql` in MySQL Workbench.
+   - Select the whole script and execute it.
+   - This will:
+     - Create the database `BankDatabase_spot`.
+     - Create required tables (branches, customers, accounts, etc.).
+     - Create stored procedures (for insert/update/delete).
+     - Optionally create triggers (if included in the script).
+
+3. **Check that the schema exists**
+   - In Workbench, you should now see a schema named `BankDatabase_spot`.
+   - Expand it and verify that the tables and procedures are created.
+
+
+
