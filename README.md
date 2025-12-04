@@ -93,5 +93,30 @@ BankDatabase-WinFormsApp/
    - In Workbench, you should now see a schema named `BankDatabase_spot`.
    - Expand it and verify that the tables and procedures are created.
 
+---
+
+## Application Configuration
+
+The application reads the MySQL connection string from `App.config`.
+
+Example `App.config` section:
+
+```xml
+<configuration>
+  <connectionStrings>
+    <add name="BankDb"
+         connectionString="Server=127.0.0.1;Port=3306;Database=BankDatabase_spot;Uid=root;Pwd=YOUR_PASSWORD_HERE;"
+         providerName="MySql.Data.MySqlClient" />
+  </connectionStrings>
+
+  <startup> 
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" />
+  </startup>
+</configuration>
+```
+⚠️ Important:
+
+Replace YOUR_PASSWORD_HERE with your own MySQL password.
+Do not commit your real password to public repositories.
 
 
