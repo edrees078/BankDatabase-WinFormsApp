@@ -120,3 +120,30 @@ Replace YOUR_PASSWORD_HERE with your own MySQL password.
 Do not commit your real password to public repositories.
 
 
+---
+
+## How to Run
+
+1. Clone the repository
+
+   git clone https://github.com/<your-username>/<your-repo-name>.git
+   cd <your-repo-name>
+
+2. Restore NuGet packages
+
+   - Open WindowsFormsApp2.sln in Visual Studio.
+   - Visual Studio will usually restore packages automatically.
+   - If needed, right-click the solution → Restore NuGet Packages.
+
+3. Configure the database connection
+
+   - Open WindowsFormsApp2/App.config.
+   - Update the Pwd= part of the BankDb connection string to match your MySQL password.
+
+4. Build and run
+
+   - Set WindowsFormsApp2 as the startup project.
+   - Press F5 (or click Start) to run the application.
+   - The main form will load and show the list of customers (if any exist in the database).
+
+
