@@ -146,4 +146,24 @@ Do not commit your real password to public repositories.
    - Press F5 (or click Start) to run the application.
    - The main form will load and show the list of customers (if any exist in the database).
 
+---
+## Usage Overview
+
+- Main Form (Customer List)
+  - Displays customers in a grid.
+  - Buttons:
+    - Add: opens the Add Customer form, inserts a new record using a stored procedure.
+    - Edit: opens the Edit Customer form for the selected row.
+    - Delete: opens the Delete confirmation form for the selected customer.
+    - Accounts: opens the Accounts form where you can manage accounts.
+    - Detail: opens a detailed view of the selected customer.
+
+- Add / Edit / Delete Forms
+  - Collect input from text boxes / combo boxes / date pickers.
+  - Call the appropriate stored procedure (e.g., MusteriEkle, MusteriGuncelle, MusteriSil).
+  - On success, the main form reloads the customer list.
+
+- Accounts Form
+  - Allows creating accounts for customers, specifying type, balance, open date and status.
+  - Uses stored procedures such as HesapEkle (depending on your SQL script).
 
