@@ -167,3 +167,53 @@ Do not commit your real password to public repositories.
   - Allows creating accounts for customers, specifying type, balance, open date and status.
   - Uses stored procedures such as HesapEkle (depending on your SQL script).
 
+
+
+## Visual Screens
+
+### Main Menu
+
+![Main Menu](images/MainMenu.png)
+
+---
+
+### Bank Branches Menu
+
+![Bank Branches Menu](images/BankBranchesMenu.png)
+
+---
+
+### Customer Management
+
+![Customer Management](images/CustomerManagement.png)
+
+---
+
+### Add New Customer Form
+
+![Add Customer](images/AddCustomer.png)
+
+---
+
+### Registered Accounts
+
+![Registered Accounts](images/RegisteredAccounts.png)
+
+---
+
+### Staff Management
+
+![Staff Management](images/StuffManagement.png)
+
+---
+
+### Processes / Transactions
+
+![Processes](images/Processes.png)
+
+---
+
+### Success Message – New Customer
+
+![Message New Customer](images/MessageNewCustomer.png)
+
